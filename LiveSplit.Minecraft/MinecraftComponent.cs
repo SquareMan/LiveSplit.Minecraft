@@ -171,7 +171,7 @@ namespace LiveSplit.Minecraft
         {
             var statsFile = Directory.EnumerateFiles(latestSaveStatsPath, "*.json").FirstOrDefault();
             var statsText = File.ReadAllLines(statsFile)[0];
-            var statStart = statsText.IndexOf("inute\":") + 7;
+            var statStart = statsText.IndexOf("play_time\":") + 11;
             var statEnd = statsText.IndexOf(",", statStart);
 
             return int.Parse(statsText.Substring(statStart, statEnd - statStart));
