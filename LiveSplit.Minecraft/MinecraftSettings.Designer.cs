@@ -35,11 +35,11 @@
             this.labelVersion = new System.Windows.Forms.Label();
             this.linkInstructions = new System.Windows.Forms.LinkLabel();
             this.checkBoxAutosplitter = new System.Windows.Forms.CheckBox();
+            this.btnSave = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // txtBoxSavesPath
             // 
-            this.txtBoxSavesPath.Enabled = false;
             this.txtBoxSavesPath.Location = new System.Drawing.Point(13, 33);
             this.txtBoxSavesPath.Name = "txtBoxSavesPath";
             this.txtBoxSavesPath.Size = new System.Drawing.Size(364, 20);
@@ -107,10 +107,21 @@
             this.checkBoxAutosplitter.UseVisualStyleBackColor = true;
             this.checkBoxAutosplitter.CheckedChanged += new System.EventHandler(this.CheckBoxAutosplitter_CheckedChanged);
             // 
+            // btnSave
+            // 
+            this.btnSave.Location = new System.Drawing.Point(383, 31);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(75, 23);
+            this.btnSave.TabIndex = 13;
+            this.btnSave.Text = "Save";
+            this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.BtnSave_Click);
+            // 
             // MinecraftSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.btnSave);
             this.Controls.Add(this.checkBoxAutosplitter);
             this.Controls.Add(this.labelSavesPath);
             this.Controls.Add(this.txtBoxSavesPath);
@@ -134,5 +145,6 @@
         private System.Windows.Forms.Label labelVersion;
         private System.Windows.Forms.LinkLabel linkInstructions;
         private System.Windows.Forms.CheckBox checkBoxAutosplitter;
+        private System.Windows.Forms.Button btnSave;
     }
 }

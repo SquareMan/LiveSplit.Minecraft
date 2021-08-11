@@ -82,6 +82,13 @@ namespace LiveSplit.Minecraft
             txtBoxSavesPath.Text = Properties.Settings.Default.SavesPath;
         }
 
+        private void BtnSave_Click(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.SavesPath = txtBoxSavesPath.Text;
+
+            Properties.Settings.Default.Save();
+        }
+
         private void LinkInstructions_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             Process.Start("https://www.youtube.com/watch?v=Ij7HDfbv63g");
@@ -95,5 +102,6 @@ namespace LiveSplit.Minecraft
                 Properties.Settings.Default.Save();
             }
         }
+
     }
 }
