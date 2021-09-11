@@ -70,7 +70,7 @@ namespace LiveSplit.Minecraft
             }
 
             // Update saves path
-            Properties.Settings.Default.SavesPath = gameDir + "\\saves";
+            savesDir = Path.Combine(gameDir, "saves");
             
             //Cleanup process list
             foreach (var proc in javaProcesses)
@@ -92,6 +92,7 @@ namespace LiveSplit.Minecraft
         private DateTime nextIGTCheck;
 
         private IntPtr latestMinecraftWindow = IntPtr.Zero;
+        private string savesDir;
         private string latestSavePath;
         private string latestSaveStatsPath;
         private long worldTime = -1;
@@ -227,7 +228,7 @@ namespace LiveSplit.Minecraft
         {
             try
             {
-                return new DirectoryInfo(Properties.Settings.Default.SavesPath)
+                return new DirectoryInfo(savesDir)
                     .GetDirectories()
                     .OrderByDescending(x => x.LastWriteTime)
                     .First().FullName;
