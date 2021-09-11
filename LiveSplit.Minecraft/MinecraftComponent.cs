@@ -274,7 +274,7 @@ namespace LiveSplit.Minecraft
             }
 
             // Restart Timer
-            if (Properties.Settings.Default.MultiInstanceMode)
+            if (Properties.Settings.Default.StartOnFocusMode)
             {
                 timer.Reset();
                 timer.Start();

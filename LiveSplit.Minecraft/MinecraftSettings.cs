@@ -48,7 +48,7 @@ namespace LiveSplit.Minecraft
         private void LoadProperties()
         {
             checkBoxAutosplitter.Checked = Properties.Settings.Default.AutosplitterEnabled;
-            checkBoxMulti.Checked = Properties.Settings.Default.MultiInstanceMode;
+            checkBoxStartOnFocus.Checked = Properties.Settings.Default.StartOnFocusMode;
         }
 
         private void LinkInstructions_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -67,9 +67,9 @@ namespace LiveSplit.Minecraft
 
         private void checkBoxMulti_CheckedChanged(object sender, EventArgs e)
         {
-            if (Properties.Settings.Default.MultiInstanceMode != checkBoxMulti.Checked)
+            if (Properties.Settings.Default.StartOnFocusMode != checkBoxStartOnFocus.Checked)
             {
-                Properties.Settings.Default.MultiInstanceMode = checkBoxMulti.Checked;
+                Properties.Settings.Default.StartOnFocusMode = checkBoxStartOnFocus.Checked;
                 Properties.Settings.Default.Save();
             }
         }

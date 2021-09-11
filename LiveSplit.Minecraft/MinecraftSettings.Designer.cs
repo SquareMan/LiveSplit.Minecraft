@@ -31,7 +31,7 @@
             this.labelVersion = new System.Windows.Forms.Label();
             this.linkInstructions = new System.Windows.Forms.LinkLabel();
             this.checkBoxAutosplitter = new System.Windows.Forms.CheckBox();
-            this.checkBoxMulti = new System.Windows.Forms.CheckBox();
+            this.checkBoxStartOnFocus = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // labelVersion
@@ -67,22 +67,22 @@
             this.checkBoxAutosplitter.UseVisualStyleBackColor = true;
             this.checkBoxAutosplitter.CheckedChanged += new System.EventHandler(this.CheckBoxAutosplitter_CheckedChanged);
             // 
-            // checkBoxMulti
+            // checkBoxStartOnFocus
             // 
-            this.checkBoxMulti.AutoSize = true;
-            this.checkBoxMulti.Location = new System.Drawing.Point(10, 23);
-            this.checkBoxMulti.Name = "checkBoxMulti";
-            this.checkBoxMulti.Size = new System.Drawing.Size(122, 17);
-            this.checkBoxMulti.TabIndex = 13;
-            this.checkBoxMulti.Text = "Multi-Instance Mode";
-            this.checkBoxMulti.UseVisualStyleBackColor = true;
-            this.checkBoxMulti.CheckedChanged += new System.EventHandler(this.checkBoxMulti_CheckedChanged);
+            this.checkBoxStartOnFocus.AutoSize = true;
+            this.checkBoxStartOnFocus.Location = new System.Drawing.Point(10, 23);
+            this.checkBoxStartOnFocus.Name = "checkBoxStartOnFocus";
+            this.checkBoxStartOnFocus.Size = new System.Drawing.Size(281, 17);
+            this.checkBoxStartOnFocus.TabIndex = 13;
+            this.checkBoxStartOnFocus.Text = "Restart Timer When Focusing New Minecraft Window";
+            this.checkBoxStartOnFocus.UseVisualStyleBackColor = true;
+            this.checkBoxStartOnFocus.CheckedChanged += new System.EventHandler(this.checkBoxMulti_CheckedChanged);
             // 
             // MinecraftSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.checkBoxMulti);
+            this.Controls.Add(this.checkBoxStartOnFocus);
             this.Controls.Add(this.checkBoxAutosplitter);
             this.Controls.Add(this.linkInstructions);
             this.Controls.Add(this.labelVersion);
@@ -93,7 +93,7 @@
             this.PerformLayout();
         }
 
-        private System.Windows.Forms.CheckBox checkBoxMulti;
+        private System.Windows.Forms.CheckBox checkBoxStartOnFocus;
 
         #endregion
 

@@ -50,12 +50,12 @@ namespace LiveSplit.Minecraft.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool MultiInstanceMode {
+        public bool StartOnFocusMode {
             get {
-                return ((bool)(this["MultiInstanceMode"]));
+                return ((bool)(this["StartOnFocusMode"]));
             }
             set {
-                this["MultiInstanceMode"] = value;
+                this["StartOnFocusMode"] = value;
             }
         }
     }
