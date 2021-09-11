@@ -4,9 +4,13 @@ using LiveSplit.Model;
 using LiveSplit.UI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Management;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -14,6 +18,65 @@ namespace LiveSplit.Minecraft
 {
     public class MinecraftComponent : UI.Components.IComponent
     {
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hmodWinEventProc, WinEventProc lpfnWinEventProc, int idProcess, int idThread, uint dwflags);
+        [DllImport("user32.dll")]
+        private static extern int UnhookWinEvent(IntPtr hWinEventHook);
+        private delegate void WinEventProc(IntPtr hWinEventHook, uint iEvent, IntPtr hWnd, int idObject, int idChild, int dwEventThread, int dwmsEventTime);
+        
+        private IntPtr focusHook;
+        private WinEventProc focusHookCallback;
+
+        private void EventFunc(IntPtr hWinEventHook, uint iEvent, IntPtr hWnd, int idObject, int idChild,
+            int dwEventThread, int dwmsEventTime)
+        {
+            // Get minecraft processes
+            var javaProcesses = Process.GetProcessesByName("javaw");
+            var minecraftProcesses = javaProcesses.Where(process => process.MainWindowTitle.Contains("Minecraft"));
+
+            // See if focused window is a minecraft instance
+            // TODO: store previous pid or something
+            var activeMinecraft = minecraftProcesses.FirstOrDefault(proc => proc.MainWindowHandle == hWnd);
+            if (activeMinecraft == null)
+            {
+                return;
+            }
+
+            // Find game directory
+            var query = $"select CommandLine from Win32_Process where ProcessId='{activeMinecraft.Id}'";
+            var result = new ManagementObjectSearcher(query).Get().Cast<ManagementBaseObject>().First();
+            if (result == null)
+            {
+                // This really shouldn't happen
+                return;
+            }
+            
+            var cmd = result["commandLine"].ToString();
+            // gameDir will be surrounded with quotes if the path contains a space
+            var match = Regex.Match(cmd ?? string.Empty, @"--gameDir (?:""(.+?)""|([^\s]+))");
+            if (!match.Success)
+            {
+                // Failed to determine game directory of focused minecraft
+                return;
+            }
+
+            var gameDir = match.Groups.Cast<Group>().Skip(1).FirstOrDefault(group => group.Value != string.Empty)?.Value;
+            if (gameDir == null)
+            {
+                // Failed to extract directory from regex
+                return;
+            }
+
+            // Update saves path
+            Properties.Settings.Default.SavesPath = gameDir + "\\saves";
+            
+            //Cleanup process list
+            foreach (var proc in javaProcesses)
+            {
+                proc.Dispose();
+            }
+        }
+        
         private readonly TimerModel timer;
         private readonly MinecraftSettings settings;
 
@@ -29,6 +92,12 @@ namespace LiveSplit.Minecraft
 
         public MinecraftComponent(LiveSplitState state)
         {
+            //Set a Windows Event Hook to fire when a window is focused
+            const uint WINEVENT_OUTOFCONTEXT = 0;
+            const uint EVENT_SYSTEM_FOREGROUND = 3;
+            focusHookCallback = EventFunc;
+            focusHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, focusHookCallback, 0, 0, WINEVENT_OUTOFCONTEXT);
+            
             settings = new MinecraftSettings(this, state);
 
             timer = new TimerModel() { CurrentState = state };
@@ -187,7 +256,11 @@ namespace LiveSplit.Minecraft
             latestSaveStatsPath = Path.Combine(FindLatestSavePath(), "stats");
         }
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            // Remove hook
+            UnhookWinEvent(focusHook);
+        }
 
         public Control GetSettingsControl(LayoutMode mode) => settings;
 
