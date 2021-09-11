@@ -37,10 +37,12 @@ namespace LiveSplit.Minecraft
             // See if focused window is a minecraft instance
             // TODO: store previous pid or something
             var activeMinecraft = minecraftProcesses.FirstOrDefault(proc => proc.MainWindowHandle == hWnd);
-            if (activeMinecraft == null)
+            if (activeMinecraft == null || hWnd == latestMinecraftWindow)
             {
                 return;
             }
+
+            latestMinecraftWindow = hWnd;
 
             // Find game directory
             var query = $"select CommandLine from Win32_Process where ProcessId='{activeMinecraft.Id}'";
@@ -75,6 +77,9 @@ namespace LiveSplit.Minecraft
             {
                 proc.Dispose();
             }
+            
+            timer.Reset();
+            timer.Start();
         }
         
         private readonly TimerModel timer;
@@ -86,6 +91,7 @@ namespace LiveSplit.Minecraft
         private const int IGT_CHECK_DELAY = 1000;
         private DateTime nextIGTCheck;
 
+        private IntPtr latestMinecraftWindow = IntPtr.Zero;
         private string latestSavePath;
         private string latestSaveStatsPath;
         private long worldTime = -1;
