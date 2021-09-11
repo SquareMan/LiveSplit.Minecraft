@@ -55,11 +55,19 @@ namespace LiveSplit.Minecraft
             
             var cmd = result["commandLine"].ToString();
             // gameDir will be surrounded with quotes if the path contains a space
-            var match = Regex.Match(cmd ?? string.Empty, @"--gameDir (?:""(.+?)""|([^\s]+))");
+            var isMultiMc = false;
+            var match = Regex.Match(cmd, @"--gameDir (?:""(.+?)""|([^\s]+))");
             if (!match.Success)
             {
                 // Failed to determine game directory of focused minecraft
-                return;
+                // Try MultiMC format
+                match = Regex.Match(cmd, @"(?:-Djava\.library\.path=(.+?) )|(?:\""-Djava\.library.path=(.+?)\"")");
+                if (!match.Success)
+                {
+                    return;
+                }
+                
+                isMultiMc = true;
             }
 
             var gameDir = match.Groups.Cast<Group>().Skip(1).FirstOrDefault(group => group.Value != string.Empty)?.Value;
@@ -67,6 +75,12 @@ namespace LiveSplit.Minecraft
             {
                 // Failed to extract directory from regex
                 return;
+            }
+
+            if (isMultiMc)
+            {
+                // Replace forward slashes and work backwards to save directory
+                gameDir = Path.Combine(Regex.Replace(gameDir, "/", "\\"), "..", ".minecraft");
             }
 
             // Update saves path
@@ -236,9 +250,9 @@ namespace LiveSplit.Minecraft
             catch
             {
                 timer.Reset();
-                MessageBox.Show("Couldn't find the Minecraft world save.\n\n" +
-                    "Check that your saves folder location is correct on the settings page and that there is at least one save on the folder.",
-                    ComponentName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                //MessageBox.Show("Couldn't find the Minecraft world save.\n\n" +
+                //    "Check that your saves folder location is correct on the settings page and that there is at least one save on the folder.",
+                //    ComponentName, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return "";
             }
         }
