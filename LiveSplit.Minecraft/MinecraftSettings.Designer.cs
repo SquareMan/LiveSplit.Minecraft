@@ -31,6 +31,7 @@
             this.labelVersion = new System.Windows.Forms.Label();
             this.linkInstructions = new System.Windows.Forms.LinkLabel();
             this.checkBoxAutosplitter = new System.Windows.Forms.CheckBox();
+            this.checkBoxMulti = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // labelVersion
@@ -66,10 +67,22 @@
             this.checkBoxAutosplitter.UseVisualStyleBackColor = true;
             this.checkBoxAutosplitter.CheckedChanged += new System.EventHandler(this.CheckBoxAutosplitter_CheckedChanged);
             // 
+            // checkBoxMulti
+            // 
+            this.checkBoxMulti.AutoSize = true;
+            this.checkBoxMulti.Location = new System.Drawing.Point(10, 23);
+            this.checkBoxMulti.Name = "checkBoxMulti";
+            this.checkBoxMulti.Size = new System.Drawing.Size(122, 17);
+            this.checkBoxMulti.TabIndex = 13;
+            this.checkBoxMulti.Text = "Multi-Instance Mode";
+            this.checkBoxMulti.UseVisualStyleBackColor = true;
+            this.checkBoxMulti.CheckedChanged += new System.EventHandler(this.checkBoxMulti_CheckedChanged);
+            // 
             // MinecraftSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.checkBoxMulti);
             this.Controls.Add(this.checkBoxAutosplitter);
             this.Controls.Add(this.linkInstructions);
             this.Controls.Add(this.labelVersion);
@@ -79,6 +92,8 @@
             this.ResumeLayout(false);
             this.PerformLayout();
         }
+
+        private System.Windows.Forms.CheckBox checkBoxMulti;
 
         #endregion
 

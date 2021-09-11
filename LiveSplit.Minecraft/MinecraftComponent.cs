@@ -92,8 +92,12 @@ namespace LiveSplit.Minecraft
                 proc.Dispose();
             }
             
-            timer.Reset();
-            timer.Start();
+            // Restart Timer
+            if (Properties.Settings.Default.MultiInstanceMode)
+            {
+                timer.Reset();                
+                timer.Start();                
+            }
         }
         
         private readonly TimerModel timer;

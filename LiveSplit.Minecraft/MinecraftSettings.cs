@@ -48,6 +48,7 @@ namespace LiveSplit.Minecraft
         private void LoadProperties()
         {
             checkBoxAutosplitter.Checked = Properties.Settings.Default.AutosplitterEnabled;
+            checkBoxMulti.Checked = Properties.Settings.Default.MultiInstanceMode;
         }
 
         private void BtnChangeSavesPath_Click(object sender, EventArgs e)
@@ -87,5 +88,13 @@ namespace LiveSplit.Minecraft
             }
         }
 
+        private void checkBoxMulti_CheckedChanged(object sender, EventArgs e)
+        {
+            if (Properties.Settings.Default.MultiInstanceMode != checkBoxMulti.Checked)
+            {
+                Properties.Settings.Default.MultiInstanceMode = checkBoxMulti.Checked;
+                Properties.Settings.Default.Save();
+            }
+        }
     }
 }
