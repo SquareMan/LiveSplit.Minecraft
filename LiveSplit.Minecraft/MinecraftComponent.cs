@@ -22,84 +22,11 @@ namespace LiveSplit.Minecraft
         private static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hmodWinEventProc, WinEventProc lpfnWinEventProc, int idProcess, int idThread, uint dwflags);
         [DllImport("user32.dll")]
         private static extern int UnhookWinEvent(IntPtr hWinEventHook);
-        private delegate void WinEventProc(IntPtr hWinEventHook, uint iEvent, IntPtr hWnd, int idObject, int idChild, int dwEventThread, int dwmsEventTime);
         
+        private delegate void WinEventProc(IntPtr hWinEventHook, uint iEvent, IntPtr hWnd, int idObject, int idChild, int dwEventThread, int dwmsEventTime);
         private IntPtr focusHook;
         private WinEventProc focusHookCallback;
 
-        private void EventFunc(IntPtr hWinEventHook, uint iEvent, IntPtr hWnd, int idObject, int idChild,
-            int dwEventThread, int dwmsEventTime)
-        {
-            // Get minecraft processes
-            var javaProcesses = Process.GetProcessesByName("javaw");
-            var minecraftProcesses = javaProcesses.Where(process => process.MainWindowTitle.Contains("Minecraft"));
-
-            // See if focused window is a minecraft instance
-            // TODO: store previous pid or something
-            var activeMinecraft = minecraftProcesses.FirstOrDefault(proc => proc.MainWindowHandle == hWnd);
-            if (activeMinecraft == null || hWnd == latestMinecraftWindow)
-            {
-                return;
-            }
-
-            latestMinecraftWindow = hWnd;
-
-            // Find game directory
-            var query = $"select CommandLine from Win32_Process where ProcessId='{activeMinecraft.Id}'";
-            var result = new ManagementObjectSearcher(query).Get().Cast<ManagementBaseObject>().First();
-            if (result == null)
-            {
-                // This really shouldn't happen
-                return;
-            }
-            
-            var cmd = result["commandLine"].ToString();
-            // gameDir will be surrounded with quotes if the path contains a space
-            var isMultiMc = false;
-            var match = Regex.Match(cmd, @"--gameDir (?:""(.+?)""|([^\s]+))");
-            if (!match.Success)
-            {
-                // Failed to determine game directory of focused minecraft
-                // Try MultiMC format
-                match = Regex.Match(cmd, @"(?:-Djava\.library\.path=(.+?) )|(?:\""-Djava\.library.path=(.+?)\"")");
-                if (!match.Success)
-                {
-                    return;
-                }
-                
-                isMultiMc = true;
-            }
-
-            var gameDir = match.Groups.Cast<Group>().Skip(1).FirstOrDefault(group => group.Value != string.Empty)?.Value;
-            if (gameDir == null)
-            {
-                // Failed to extract directory from regex
-                return;
-            }
-
-            if (isMultiMc)
-            {
-                // Replace forward slashes and work backwards to save directory
-                gameDir = Path.Combine(Regex.Replace(gameDir, "/", "\\"), "..", ".minecraft");
-            }
-
-            // Update saves path
-            savesDir = Path.Combine(gameDir, "saves");
-            
-            //Cleanup process list
-            foreach (var proc in javaProcesses)
-            {
-                proc.Dispose();
-            }
-            
-            // Restart Timer
-            if (Properties.Settings.Default.MultiInstanceMode)
-            {
-                timer.Reset();                
-                timer.Start();                
-            }
-        }
-        
         private readonly TimerModel timer;
         private readonly MinecraftSettings settings;
 
@@ -120,7 +47,7 @@ namespace LiveSplit.Minecraft
             //Set a Windows Event Hook to fire when a window is focused
             const uint WINEVENT_OUTOFCONTEXT = 0;
             const uint EVENT_SYSTEM_FOREGROUND = 3;
-            focusHookCallback = EventFunc;
+            focusHookCallback = WindowFocusCallback;
             focusHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, focusHookCallback, 0, 0, WINEVENT_OUTOFCONTEXT);
             
             settings = new MinecraftSettings(this, state);
@@ -254,9 +181,6 @@ namespace LiveSplit.Minecraft
             catch
             {
                 timer.Reset();
-                //MessageBox.Show("Couldn't find the Minecraft world save.\n\n" +
-                //    "Check that your saves folder location is correct on the settings page and that there is at least one save on the folder.",
-                //    ComponentName, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return "";
             }
         }
@@ -274,6 +198,87 @@ namespace LiveSplit.Minecraft
             var statEnd = statsText.IndexOf(",", statStart);
 
             return int.Parse(statsText.Substring(statStart, statEnd - statStart));
+        }
+
+        /// <summary>
+        /// Called whenever any window is brought to the foreground. Checks if the newly focused window matches an
+        /// existing Minecraft process and if so will discover the relevant save directory. If the relevant setting
+        /// is enabled the timer will be restarted afterwards.
+        /// </summary>
+        private void WindowFocusCallback(IntPtr hWinEventHook, uint iEvent, IntPtr hWnd, int idObject, int idChild,
+            int dwEventThread, int dwmsEventTime)
+        {
+            // Get minecraft processes
+            var javaProcesses = Process.GetProcessesByName("javaw");
+            var minecraftProcesses = javaProcesses.Where(process => process.MainWindowTitle.Contains("Minecraft"));
+
+            // See if focused window is a minecraft instance different from the previously focused minecraft instance
+            var activeMinecraft = minecraftProcesses.FirstOrDefault(proc => proc.MainWindowHandle == hWnd);
+            if (activeMinecraft == null || hWnd == latestMinecraftWindow)
+            {
+                return;
+            }
+
+            latestMinecraftWindow = hWnd;
+
+            // Find game directory
+            // This could be cached by Window Handle but it's likely fine performance-wise to just recalculate.
+            var query = $"select CommandLine from Win32_Process where ProcessId='{activeMinecraft.Id}'";
+            var result = new ManagementObjectSearcher(query).Get().Cast<ManagementBaseObject>().First();
+            if (result == null)
+            {
+                // This really shouldn't happen
+                return;
+            }
+
+            var cmd = result["commandLine"].ToString();
+            // gameDir will be surrounded with quotes if the path contains a space
+            var isMultiMc = false;
+            var match = Regex.Match(cmd, @"--gameDir (?:""(.+?)""|([^\s]+))");
+            if (!match.Success)
+            {
+                // Failed to determine game directory of focused minecraft
+                // Try MultiMC format
+                match = Regex.Match(cmd, @"(?:-Djava\.library\.path=(.+?) )|(?:\""-Djava\.library.path=(.+?)\"")");
+                if (!match.Success)
+                {
+                    return;
+                }
+
+                isMultiMc = true;
+            }
+
+            // Get Game Directory from regex match
+            var gameDir = match.Groups.Cast<Group>().Skip(1).FirstOrDefault(group => group.Value != string.Empty)
+                ?.Value;
+            if (gameDir == null)
+            {
+                // Failed to extract directory from regex
+                return;
+            }
+
+            // MultiMC doesn't expose the actual directory we need on the commandline
+            if (isMultiMc)
+            {
+                // Replace forward slashes and work backwards to save directory
+                gameDir = Path.Combine(Regex.Replace(gameDir, "/", "\\"), "..", ".minecraft");
+            }
+
+            // Update saves path
+            savesDir = Path.Combine(gameDir, "saves");
+
+            //Cleanup process list
+            foreach (var proc in javaProcesses)
+            {
+                proc.Dispose();
+            }
+
+            // Restart Timer
+            if (Properties.Settings.Default.MultiInstanceMode)
+            {
+                timer.Reset();
+                timer.Start();
+            }
         }
 
         private void OnStart(object sender, EventArgs e)

@@ -51,29 +51,6 @@ namespace LiveSplit.Minecraft
             checkBoxMulti.Checked = Properties.Settings.Default.MultiInstanceMode;
         }
 
-        private void BtnChangeSavesPath_Click(object sender, EventArgs e)
-        {
-            var dialog = new FolderBrowserDialog();
-            var result = dialog.ShowDialog();
-
-            if(result == DialogResult.OK)
-            {
-                Properties.Settings.Default.Save();
-            }
-        }
-
-
-        private void BtnResetSavesPath_Click(object sender, EventArgs e)
-        {
-            var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            Properties.Settings.Default.Save();
-        }
-
-        private void BtnSave_Click(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.Save();
-        }
-
         private void LinkInstructions_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             Process.Start("https://www.youtube.com/watch?v=Ij7HDfbv63g");
