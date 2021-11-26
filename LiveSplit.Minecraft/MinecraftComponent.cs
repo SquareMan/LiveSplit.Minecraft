@@ -209,7 +209,7 @@ namespace LiveSplit.Minecraft
             int dwEventThread, int dwmsEventTime)
         {
             // Get minecraft processes
-            var javaProcesses = Process.GetProcessesByName("javaw");
+            var javaProcesses = Process.GetProcessesByName("java");
             var minecraftProcesses = javaProcesses.Where(process => process.MainWindowTitle.Contains("Minecraft"));
 
             // See if focused window is a minecraft instance different from the previously focused minecraft instance
